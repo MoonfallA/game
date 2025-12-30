@@ -142,6 +142,17 @@ canvas.emscripten { border: 0px none; background-color: black; }
       }, false);
 
       var Module = {
+         print: function(text) {
+    // 实时将C++的cout/printf输出显示到页面
+    var output = document.getElementById('output') || document.createElement('div');
+    output.id = 'output';
+    output.textContent += text + '\n';
+    document.body.appendChild(output);
+  },
+  printErr: function(text) {
+    // 捕获错误输出（可选）
+    console.log('错误：', text);
+  },
         print(...args) {
           console.log(...args);
           // These replacements are necessary if you render to raw HTML
