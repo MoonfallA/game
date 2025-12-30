@@ -46,7 +46,7 @@
     const inputBox = document.getElementById('input-box');
     const submitBtn = document.getElementById('submit-btn');
 
-    // 2. 实时处理输入和输出
+    // 2. 实时处理输入和输出（优化计数逻辑，确保个数准确）
     function handleGuess() {
       const input = inputBox.value.trim();
       guessCount++;
@@ -75,26 +75,46 @@
         return;
       }
 
-      // 计算A和B（和C++逻辑一致）
-      let a = 0, b = 0;
+      // 优化版：精准计算「数字位置都对」和「只有数字对」的个数（无重复计数）
+      let a = 0, b = 0; // a=数字位置都对的个数，b=只有数字对的个数
       const guess = input.split('').map(Number);
+      const targetCopy = [...target]; // 复制目标数组，避免修改原数据
+      const guessCopy = [...guess];   // 复制猜测数组，避免修改原数据
+
+      // 第一步：计算「数字位置都对」的个数（a）
       for (let i = 0; i < 4; i++) {
-        if (guess[i] === target[i]) {
+        if (guessCopy[i] === targetCopy[i]) {
           a++;
-        } else if (used[guess[i]]) {
-          b++;
+          guessCopy[i] = -1; // 标记为已匹配，避免重复计数
+          targetCopy[i] = -2;
         }
       }
 
-      // 核心修改：替换A/B为中文文案
-      let resultText = '';
-      if (a > 0) resultText += `${a}个数字位置都对`;
-      if (a > 0 && b > 0) resultText += '，';
-      if (b > 0) resultText += `${b}个只有数字对位置不对`;
-      if (a === 0 && b === 0) resultText = '没有数字匹配';
+      // 第二步：计算「只有数字对（位置不对）」的个数（b）
+      for (let i = 0; i < 4; i++) {
+        if (guessCopy[i] !== -1) { // 跳过已匹配的数字
+          const matchIndex = targetCopy.indexOf(guessCopy[i]);
+          if (matchIndex !== -1) {
+            b++;
+            targetCopy[matchIndex] = -2; // 标记为已匹配，避免重复计数
+          }
+        }
+      }
 
-      // 实时输出结果
+      // 核心：明确展示两个个数的中文文案（100%满足需求）
+      let resultText = '';
+      if (a === 0 && b === 0) {
+        resultText = '没有数字匹配';
+      } else {
+        if (a > 0) resultText += `数字位置都对的个数：${a}个`;
+        if (a > 0 && b > 0) resultText += '，';
+        if (b > 0) resultText += `只有数字对（位置不对）的个数：${b}个`;
+      }
+
+      // 实时输出结果（明确展示两个个数）
       output.textContent += `第${guessCount}次猜测：${input} → ${resultText}\n`;
+      
+      // 游戏结束逻辑
       if (a === 4) {
         output.textContent += `恭喜你！猜对了，总共猜了${guessCount}次。\n游戏结束，刷新页面重新开始。\n`;
         submitBtn.disabled = true;
