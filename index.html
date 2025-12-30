@@ -141,65 +141,63 @@ canvas.emscripten { border: 0px none; background-color: black; }
         e.preventDefault();
       }, false);
 
-      var Module = {
-  print: function(...args) {
-    console.log(...args);
-    // 实时输出到页面的核心逻辑（新增）
-    var output = document.getElementById('output') || document.createElement('div');
-    output.id = 'output';
-    output.style = 'margin: 10px; padding: 8px; border: 1px solid #eee; font-family: monospace;';
-    var text = args.join(' ');
-    output.textContent += text + "\n";
-    document.body.appendChild(output);
-    // 保留原有输出到输入框的逻辑（不删）
-    if (outputElement) {
-      outputElement.value += text + "\n";
-      outputElement.scrollTop = outputElement.scrollHeight; // focus on bottom
-    }
-  },
-  printErr: function(text) {
-    // 捕获错误输出（可选）
-    console.log('错误：', text);
-  },
-  canvas: canvasElement,
-  setStatus(text) {
-    if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
-    if (text === Module.setStatus.last.text) return;
-    var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
-    var now = Date.now();
-    // if this is a progress update, skip it if too soon
-    if (m && now - Module.setStatus.last.time < 30) return;
-    Module.setStatus.last.time = now;
-    Module.setStatus.last.text = text;
-    if (m) {
-      text = m[1];
-      progressElement.value = parseInt(m[2])*100;
-      progressElement.max = parseInt(m[4])*100;
-      progressElement.hidden = false;
-      spinnerElement.hidden = false;
-    } else {
-      progressElement.value = null;
-      progressElement.max = null;
-      progressElement.hidden = true;
-      if (!text) spinnerElement.style.display = 'none';
-    }
-    statusElement.innerHTML = text;
-  },
-  totalDependencies: 0,
-  monitorRunDependencies(left) {
-    this.totalDependencies = Math.max(this.totalDependencies, left);
-    Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
-  }
-};
-Module.setStatus('Downloading...');
-window.onerror = (event) => {
-  // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
-  Module.setStatus('Exception thrown, see JavaScript console');
-  spinnerElement.style.display = 'none';
-  Module.setStatus = (text) => {
-    if (text) console.error('[post-exception status] ' + text);
-  };
-};
+var Module = {
+        print(...args) {
+          console.log(...args);
+          // 新增：实时输出到页面的核心逻辑
+          var output = document.getElementById('output') || document.createElement('div');
+          output.id = 'output';
+          output.style = 'margin: 10px; padding: 8px; border: 1px solid #eee; font-family: monospace;';
+          var text = args.join(' ');
+          output.textContent += text + "\n";
+          document.body.appendChild(output);
+
+          // 保留原有输出到输入框的逻辑（不动）
+          if (outputElement) {
+            outputElement.value += text + "\n";
+            outputElement.scrollTop = outputElement.scrollHeight; // focus on bottom
+          }
+        },
+        canvas: canvasElement,
+        setStatus(text) {
+          if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+          if (text === Module.setStatus.last.text) return;
+          var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+          var now = Date.now();
+          // if this is a progress update, skip it if too soon
+          if (m && now - Module.setStatus.last.time < 30) return;
+          Module.setStatus.last.time = now;
+          Module.setStatus.last.text = text;
+          if (m) {
+            text = m[1];
+            progressElement.value = parseInt(m[2])*100;
+            progressElement.max = parseInt(m[4])*100;
+            progressElement.hidden = false;
+            spinnerElement.hidden = false;
+          } else {
+            progressElement.value = null;
+            progressElement.max = null;
+            progressElement.hidden = true;
+            if (!text) spinnerElement.style.display = 'none';
+          }
+          statusElement.innerHTML = text;
+        },
+        totalDependencies: 0,
+        monitorRunDependencies(left) {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+        }
+      };
+      Module.setStatus('Downloading...');
+      window.onerror = (event) => {
+        // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
+        Module.setStatus('Exception thrown, see JavaScript console');
+        spinnerElement.style.display = 'none';
+        Module.setStatus = (text) => {
+          if (text) console.error('[post-exception status] ' + text);
+        };
+      };
+    </script>
     <script async type="text/javascript" src="index.js"></script>
   </body>
 </html>
