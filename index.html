@@ -86,8 +86,15 @@
         }
       }
 
+      // 核心修改：替换A/B为中文文案
+      let resultText = '';
+      if (a > 0) resultText += `${a}个数字位置都对`;
+      if (a > 0 && b > 0) resultText += '，';
+      if (b > 0) resultText += `${b}个只有数字对位置不对`;
+      if (a === 0 && b === 0) resultText = '没有数字匹配';
+
       // 实时输出结果
-      output.textContent += `第${guessCount}次猜测：${input} → ${a}A${b}B\n`;
+      output.textContent += `第${guessCount}次猜测：${input} → ${resultText}\n`;
       if (a === 4) {
         output.textContent += `恭喜你！猜对了，总共猜了${guessCount}次。\n游戏结束，刷新页面重新开始。\n`;
         submitBtn.disabled = true;
