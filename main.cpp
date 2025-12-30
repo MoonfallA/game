@@ -2,6 +2,7 @@
 #include <ctime>
 using namespace std;
 
+
 int randomnum()
 {
 	int num[4];
@@ -81,6 +82,11 @@ void  compare(int ans, int guess, int &a, int &b)
 
 int main()
 {
+	ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    // 禁用 printf 缓冲
+    setvbuf(stdout, nullptr, _IONBF, 0);
+
 	int ans = randomnum();
 	int attempt = 0;
 	int maxattempt = 10;
